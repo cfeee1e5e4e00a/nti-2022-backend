@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "nti-2022-backend"
 version = "0.1.0"
-description = ""
-authors = ["leadpogrommer <ilyamerzlakov@gmail.com>"]
+description = "backend from nti-2022 by cfeee1e5e4e00a"
+authors = ["cfeee1e5e4e00a"]
+
+[tool.poetry.scripts]
+start = "src:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

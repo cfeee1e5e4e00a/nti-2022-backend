@@ -12,15 +12,14 @@ def DI_config(binder: Binder):
     binder.bind(device.DeviceService, device.DeviceService('192.168.2.169', 2000))
     binder.bind(state.StateService, state.StateService())
 
-async def shutdown(_):
+async def shutdown():
     websocket_service = instance(api.ws.WebsocketsService)
     device_service = instance(device.DeviceService)
 
     await device_service.stop()
     await websocket_service.stop()
 
-
-if __name__ == '__main__':
+def start():
     configure(DI_config)
 
     websocket_service = instance(api.ws.WebsocketsService)
@@ -35,3 +34,6 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     web.run_app(app, loop=loop, host='0.0.0.0')
+
+if __name__ == '__main__':
+    start()

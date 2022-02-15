@@ -4,8 +4,9 @@ from collections.abc import Callable
 import json
 from inject import instance
 import state
+import typedefs
 
-DeviceState = dict[str, object]
+
 
 # TODO: add tcp reconnect
 class DeviceService:
@@ -52,7 +53,7 @@ class DeviceService:
         self._writer.write(b'\xff' + f'{len(msg)}{msg}'.encode())
         await self._writer.drain()
 
-    async def set_state(self, device_state: DeviceState):
+    async def set_state(self, device_state: typedefs.DeviceState):
         state_service = instance(state.StateService)
         await state_service.on_device_receive(device_state)
 
@@ -81,6 +82,8 @@ class DeviceService:
 
                 await self._send_json(json.dumps({'__ack__': data_decoded['__ack__']}))
                 print('calling callback')
+                data_decoded.pop('__ack__', None)
+                data_decoded.pop('__inack__', None)
                 await self.set_state(data_decoded)
             except json.JSONDecodeError:
                 pass
