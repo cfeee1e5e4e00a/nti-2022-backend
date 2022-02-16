@@ -53,6 +53,9 @@ class DeviceService:
         self._writer.write(b'\xff' + f'{len(msg)}{msg}'.encode())
         await self._writer.drain()
 
+    async def get_all(self):
+        await self.send({'__all__': 1})
+
     async def set_state(self, device_state: typedefs.DeviceState):
         state_service = instance(state.StateService)
         await state_service.on_device_receive(device_state)
@@ -79,11 +82,12 @@ class DeviceService:
                         if value == data_decoded['__inack__']:
                             self._sent_packet_id.pop(key)
                             print(f'removing {key}; ack = {value}')
-
-                await self._send_json(json.dumps({'__ack__': data_decoded['__ack__']}))
+                if '__ack__' in data_decoded.keys():
+                    await self._send_json(json.dumps({'__ack__': data_decoded['__ack__']}))
                 print('calling callback')
                 data_decoded.pop('__ack__', None)
                 data_decoded.pop('__inack__', None)
-                await self.set_state(data_decoded)
+                if len(data_decoded.keys()) != 0:
+                    await self.set_state(data_decoded)
             except json.JSONDecodeError:
                 pass

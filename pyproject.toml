@@ -13,6 +13,9 @@ asyncio = "^3.4.3"
 Inject = "^4.3.1"
 aiohttp = "^3.8.1"
 python-dotenv = "^0.19.2"
+aiohttp_security = "^0.4.0"
+aiohttp-session = "^2.11.0"
+gino = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 
