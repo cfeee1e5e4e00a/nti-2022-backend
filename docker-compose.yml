@@ -1,5 +1,14 @@
 version: '3'
 services:
+  # TDDO: we need to somehow connect fom container to lan
+  # this is complicated
+  # i will implement it later
+#  app:
+#    build:
+#      context: .
+#    restart: always
+#    environment:
+#
   db:
     image: postgres
     restart: always
@@ -8,7 +17,9 @@ services:
       POSTGRES_PASSWORD: nti
       POSTGRES_DB: nti
     ports:
-      - 5432:5432
+      - "5432:5432"
+    volumes:
+      - "./docker_data/db:/var/lib/postgresql/data"
   pgadmin:
     image: dpage/pgadmin4
     restart: always
@@ -16,9 +27,11 @@ services:
       PGADMIN_DEFAULT_EMAIL: "t@t.ru"
       PGADMIN_DEFAULT_PASSWORD: "1"
     ports:
-      - 8081:80
+      - "8081:80"
+    volumes:
+      - "./docker_data/pgadmin:/var/lib/pgadmin"
   redis:
     image: redis
     restart: always
     ports:
-      - 6379:6379
+      - "6379:6379"

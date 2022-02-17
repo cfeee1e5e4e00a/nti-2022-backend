@@ -303,3 +303,5 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/macos,pycharm+all,visualstudiocode,python
 
 __pycache__/
+
+./docker_data

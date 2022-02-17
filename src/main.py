@@ -9,6 +9,7 @@ from db import setup_db
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import aiohttp_cors
 
 
 os.chdir(Path(__file__).parent.parent)
@@ -64,6 +65,8 @@ def start():
             print(f'{route.method}\t{route.resource.canonical}')
 
     print('-'*10)
+
+    app.add_routes([web.static('/static', './samples')])
 
     web.run_app(app, loop=loop, host='0.0.0.0')
 

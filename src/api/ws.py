@@ -7,7 +7,7 @@ class WebsocketsService:
         self.clients = set()  # type: set[web.WebSocketResponse]
 
     async def broadcast(self, data: str):
-        print('broadcasting')
+        # print('broadcasting')
         await asyncio.gather(*[socket.send_str(data) for socket in self.clients])
 
     async def stop(self):

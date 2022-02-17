@@ -16,7 +16,7 @@ def get_routes(base: str):
 async def info(request: web.Request):
     await aiohttp_security.check_authorized(request)
     user = await aiohttp_security.authorized_userid(request)  # type: UserModel
-    return web.json_response({"login": user.login, "id": user.id})
+    return web.json_response({"login": user.login, "id": user.id, "role": user.role})
 
 
 async def sign_in(request: web.Request):
@@ -35,7 +35,8 @@ async def sign_up(request: web.Request):
     data = await request.json()
     login = data['login']
     password = data['password']
-    user = await UserModel.create(login=login, password=password)
+    role = data['role']
+    user = await UserModel.create(login=login, password=password, role=role)
     return web.HTTPOk()
 
 

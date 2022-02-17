@@ -65,7 +65,7 @@ class DeviceService:
                                                                    self._port)  # type: (asyncio.StreamReader, asyncio.StreamWriter)
         self._ready.set_result(None)
 
-        print('in loop')
+        # print('in loop')
 
         while self._running:
             try:
@@ -73,7 +73,7 @@ class DeviceService:
                     pass
                 size = int(await self._reader.readline())
                 data = await self._reader.readexactly(size)
-                print(data)
+                # print(data)
                 # data = json.loads(data.decode())
                 # print(data)
                 data_decoded = json.loads(data.decode())
@@ -81,13 +81,14 @@ class DeviceService:
                     for key, value in list(self._sent_packet_id.items()):
                         if value == data_decoded['__inack__']:
                             self._sent_packet_id.pop(key)
-                            print(f'removing {key}; ack = {value}')
+                            # print(f'removing {key}; ack = {value}')
                 if '__ack__' in data_decoded.keys():
                     await self._send_json(json.dumps({'__ack__': data_decoded['__ack__']}))
-                print('calling callback')
+                # print('calling callback')
                 data_decoded.pop('__ack__', None)
                 data_decoded.pop('__inack__', None)
                 if len(data_decoded.keys()) != 0:
+                    print(data_decoded)
                     await self.set_state(data_decoded)
             except json.JSONDecodeError:
                 pass

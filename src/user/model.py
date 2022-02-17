@@ -8,4 +8,6 @@ class UserModel(db.Model):
 
     id = Column(Integer(), primary_key=True)
     login = Column(String(), nullable=False, unique=True)
+    # TODO: store passwords securely
     password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
