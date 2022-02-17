@@ -17,3 +17,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: "1"
     ports:
       - 8081:80
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379

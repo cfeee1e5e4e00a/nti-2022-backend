@@ -25,7 +25,8 @@ class StateService:
         def map_from_device(state: typedefs.State, device_state: typedefs.DeviceState):
             map = {
                 "led": "lamp",
-                "pot": "dimmer"
+                "pot": "dimmer",
+                "test": "test",
             }
 
             return state | reduce(lambda acc, item: acc | {map[item[0]]: item[1]}, device_state.items(), dict())

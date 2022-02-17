@@ -1,11 +1,18 @@
 import asyncio
-import json
 from inject import Binder, configure, instance
 from aiohttp import web
 from api import security, routes
-from aiohttp_session import session_middleware,SimpleCookieStorage
-from gino import Gino
+from aiohttp_session import session_middleware
+from aiohttp_session.redis_storage import RedisStorage
+from aioredis import Redis
 from db import setup_db
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+
+os.chdir(Path(__file__).parent.parent)
+
 
 import device
 import api.ws
@@ -13,7 +20,7 @@ import state
 
 def DI_config(binder: Binder):
     binder.bind(api.ws.WebsocketsService, api.ws.WebsocketsService())
-    binder.bind(device.DeviceService, device.DeviceService('192.168.2.169', 2000))
+    binder.bind(device.DeviceService, device.DeviceService(os.environ['DEVICE_HOST'], int(os.environ['DEVICE_PORT'])))
     binder.bind(state.StateService, state.StateService())
 
 
@@ -26,6 +33,8 @@ async def shutdown(_):
 
 
 def start():
+    load_dotenv()
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
@@ -39,8 +48,7 @@ def start():
 
     app = web.Application()
 
-    # TODO: remove SimpleCookieStorage, it is insecure and throws exceptions on /ws
-    app.middlewares.append(session_middleware(SimpleCookieStorage()))
+    app.middlewares.append(session_middleware(RedisStorage(Redis(host=os.environ['REDIS_HOST']))))
 
     security.setup_security(app)
 
