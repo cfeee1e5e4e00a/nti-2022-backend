@@ -14,10 +14,8 @@ import typedefs
 class StateService:
     def __init__(self):
         pass
-        # self.state: typedefs.State = {
-        #     "lamp": False,
-        #     "dimmer": 0,
-        # }
+        self.state: typedefs.State = {
+        }
 
     async def broadcast(self, state):
         # map state -> client
@@ -31,20 +29,23 @@ class StateService:
         time = datetime.now()
 
         def map_from_device(device_state: typedefs.DeviceState):
-            map = {
-                "led": "lamp",
-                "pot": "dimmer",
-                "test": "test",
-            }
+            # map = {
+            #     "led": "lamp",
+            #     "pot": "dimmer",
+            #     "test": "test",
+            # }
+            # TODO: use map again
+            # return reduce(lambda acc, item: acc | [{'sensor': item[0], 'time': time.timestamp(), 'value': item[1]}], device_state.items(), dict())
+            return device_state
 
-            return reduce(lambda acc, item: acc + [{'sensor': map[item[0]], 'time': time.timestamp(), 'value': item[1]}], device_state.items(), list())
 
-        state = map_from_device(device_state)
+        new_state = map_from_device(device_state)
+        self.state |= new_state
 
-        for item in state:
-            asyncio.ensure_future(MeasurementModel.create(time=item['time'], sensor=item['sensor'], value=item['value']))
+        for key, value in new_state.items():
+            asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
 
-        await self.broadcast(state)
+        await self.broadcast(new_state)
 
 
 

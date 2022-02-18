@@ -8,6 +8,7 @@ import typedefs
 import serial_asyncio
 from asyncio.streams import StreamReaderProtocol, StreamReader, StreamWriter
 from serial.serialutil import  SerialException
+from os import environ
 #
 # class Protocol(asyncio.Protocol):
 
@@ -99,12 +100,21 @@ class DeviceService:
                 pass
             except UnicodeError:
                 pass
-            except SerialException:
+            except ValueError:
+                pass
+            except SerialException as e:
+                print(e)
                 timeout = 0.1
 
     async def connect(self, timeout:float = 0):
         self._ready = asyncio.Future()
         await asyncio.sleep(timeout)
+
+        try:
+            if self._transport is not None:
+                self._transport.close()
+        except Exception:
+            pass
 
         self._reader = StreamReader(limit=2 ** 16, loop=self._loop)
         protocol = StreamReaderProtocol(self._reader, loop=self._loop)
@@ -112,9 +122,11 @@ class DeviceService:
         def factory():
             return protocol
 
-        transport, _ = await serial_asyncio.create_serial_connection(url='/dev/stm_disc', baudrate=115200,
+        self._transport, _ = await serial_asyncio.create_serial_connection(url=environ['STM_PORT'], baudrate=115200,
                                                                      protocol_factory=factory, loop=self._loop)
-        self._writer = StreamWriter(transport, protocol, self._reader, self._loop)
+
+
+        self._writer = StreamWriter(self._transport, protocol, self._reader, self._loop)
 
         self._ready.set_result(None)
 
