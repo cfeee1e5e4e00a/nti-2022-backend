@@ -19,6 +19,7 @@ gino = "^1.0.1"
 aioredis = "^2.0.1"
 aiohttp_cors = "^0.7.0"
 pyserial-asyncio = "^0.6"
+aiosmtplib = "^1.1.6"
 
 [tool.poetry.dev-dependencies]
 

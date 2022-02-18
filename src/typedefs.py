@@ -1,2 +1,4 @@
-DeviceState = dict[str, object]
-State = dict[str, object]
+from typing import Any
+
+DeviceState = dict[str, Any]
+State = dict[str, Any]

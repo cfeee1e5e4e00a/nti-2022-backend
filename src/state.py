@@ -6,6 +6,7 @@ from functools import reduce
 from datetime import datetime
 import asyncio
 from measurements.MeasurementModel import MeasurementModel
+from events import EventService
 
 import typedefs
 
@@ -16,6 +17,7 @@ class StateService:
         pass
         self.state: typedefs.State = {
         }
+        self.flag = False
 
     async def broadcast(self, state):
         # map state -> client
@@ -41,12 +43,20 @@ class StateService:
 
         new_state = map_from_device(device_state)
         self.state |= new_state
-
+        await self.check_for_events()
         for key, value in new_state.items():
             asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
 
         await self.broadcast(new_state)
 
+
+    async def check_for_events(self):
+        if not self.flag and self.state['weight'] > 900:
+            await instance(EventService).register_event('weight', f"Patient is to fat: weight = {self.state['weight']}")
+
+            self.flag = True
+        if self.state['weight'] <= 900 and self.flag:
+            self.flag = False
 
 
 
