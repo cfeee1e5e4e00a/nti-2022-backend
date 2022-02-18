@@ -193,6 +193,28 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "pyserial"
+version = "3.5"
+description = "Python Serial Port Extension"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+cp2110 = ["hidapi"]
+
+[[package]]
+name = "pyserial-asyncio"
+version = "0.6"
+description = "Python Serial Port Extension - Asynchronous I/O support"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pyserial = "*"
+
+[[package]]
 name = "python-dotenv"
 version = "0.19.2"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -246,7 +268,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "2f77b5d9190d579f0882ed19a89b8289cf847c2054960eaebc2d314d5b1ff156"
+content-hash = "f7a59f203eb55425115fb71d48a933c30830cb5c716a7a01a84b8b4588160def"
 
 [metadata.files]
 aiohttp = [
@@ -521,6 +543,14 @@ multidict = [
     {file = "multidict-6.0.2-cp39-cp39-win32.whl", hash = "sha256:23b616fdc3c74c9fe01d76ce0d1ce872d2d396d8fa8e4899398ad64fb5aa214a"},
     {file = "multidict-6.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:4bae31803d708f6f15fd98be6a6ac0b6958fcf68fda3c77a048a4f9073704aae"},
     {file = "multidict-6.0.2.tar.gz", hash = "sha256:5ff3bd75f38e4c43f1f470f2df7a4d430b821c4ce22be384e1459cb57d6bb013"},
+]
+pyserial = [
+    {file = "pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0"},
+    {file = "pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb"},
+]
+pyserial-asyncio = [
+    {file = "pyserial-asyncio-0.6.tar.gz", hash = "sha256:b6032923e05e9d75ec17a5af9a98429c46d2839adfaf80604d52e0faacd7a32f"},
+    {file = "pyserial_asyncio-0.6-py3-none-any.whl", hash = "sha256:de9337922619421b62b9b1a84048634b3ac520e1d690a674ed246a2af7ce1fc5"},
 ]
 python-dotenv = [
     {file = "python-dotenv-0.19.2.tar.gz", hash = "sha256:a5de49a31e953b45ff2d2fd434bbc2670e8db5273606c1e737cc6b93eff3655f"},

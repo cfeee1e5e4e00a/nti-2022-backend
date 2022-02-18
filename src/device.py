@@ -5,7 +5,11 @@ import json
 from inject import instance
 import state
 import typedefs
-
+import serial_asyncio
+from asyncio.streams import StreamReaderProtocol, StreamReader, StreamWriter
+from serial.serialutil import  SerialException
+#
+# class Protocol(asyncio.Protocol):
 
 
 # TODO: add tcp reconnect
@@ -14,7 +18,6 @@ class DeviceService:
         self._running = True
         self._host = host
         self._port = port
-        self._ready = asyncio.Lock()
         self._loop = asyncio.get_event_loop()
         self._ready = asyncio.Future()
         self._sent_packet_id = dict()  # type: dict[str, int]
@@ -61,14 +64,16 @@ class DeviceService:
         await state_service.on_device_receive(device_state)
 
     async def _worker(self):
-        self._reader, self._writer = await asyncio.open_connection(self._host,
-                                                                   self._port)  # type: (asyncio.StreamReader, asyncio.StreamWriter)
-        self._ready.set_result(None)
+        # self._reader, self._writer = await asyncio.open_connection(self._host,
+        #                                                            self._port)  # type: (asyncio.StreamReader, asyncio.StreamWriter)
+
+
 
         # print('in loop')
-
+        timeout = 0
         while self._running:
             try:
+                await self.connect(timeout=timeout)
                 while (await self._reader.read(1)) != b'\xff' and self._running:
                     pass
                 size = int(await self._reader.readline())
@@ -92,3 +97,24 @@ class DeviceService:
                     await self.set_state(data_decoded)
             except json.JSONDecodeError:
                 pass
+            except UnicodeError:
+                pass
+            except SerialException:
+                timeout = 0.1
+
+    async def connect(self, timeout:float = 0):
+        self._ready = asyncio.Future()
+        await asyncio.sleep(timeout)
+
+        self._reader = StreamReader(limit=2 ** 16, loop=self._loop)
+        protocol = StreamReaderProtocol(self._reader, loop=self._loop)
+
+        def factory():
+            return protocol
+
+        transport, _ = await serial_asyncio.create_serial_connection(url='/dev/stm_disc', baudrate=115200,
+                                                                     protocol_factory=factory, loop=self._loop)
+        self._writer = StreamWriter(transport, protocol, self._reader, self._loop)
+
+        self._ready.set_result(None)
+
