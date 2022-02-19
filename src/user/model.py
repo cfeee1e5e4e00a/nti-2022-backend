@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from db import db
-from sqlalchemy import Column, Integer, String, Float, PickleType, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, PickleType, ForeignKey, BIGINT
 from sqlalchemy.orm import relationship
 
 
@@ -33,6 +33,8 @@ class UserModel(db.Model):
     # TODO: store passwords securely
     password = Column(String, nullable=False)
     role = Column(String, nullable=False)
+    rfid = Column(BIGINT())
+    face = Column(Integer())
 
     profile_id = Column(Integer(), ForeignKey('profiles.id'))
     profile: ProfileModel = relationship("ProfileModel")

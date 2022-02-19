@@ -1,6 +1,6 @@
 from aiohttp import web
 import aiohttp_security
-from user.model import UserModel
+from user.model import UserModel, ProfileModel
 from sqlalchemy import and_
 
 
@@ -36,10 +36,14 @@ async def sign_up(request: web.Request):
     login = data['login']
     password = data['password']
     role = data['role']
-    user = await UserModel.create(login=login, password=password, role=role)
+    profile = data['profile']
+
+
+    profile = await ProfileModel.create(name=profile['name'], surname=profile['surname'], age=profile['age'], sex=profile['sex'])
+
+    user = await UserModel.create(login=login, password=password, role=role, profile_id=profile.id, rfid=data['rfid'], face=data['face'])
+
     return web.HTTPOk()
-
-
 
 
 
