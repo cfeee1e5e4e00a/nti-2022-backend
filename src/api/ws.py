@@ -1,5 +1,8 @@
 import asyncio
 from aiohttp import web
+from inject import instance
+import state
+from json import dumps
 
 
 class WebsocketsService:
@@ -22,7 +25,11 @@ class WebsocketsService:
 
         self.clients.add(socket)
 
+        await socket.send_str(dumps(instance(state.StateService).state))
+
         async for msg in socket:
             print(f'Got message: {msg}')
 
         self.clients.remove(socket)
+
+        return socket

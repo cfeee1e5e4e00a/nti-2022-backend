@@ -6,6 +6,7 @@ from functools import reduce
 from datetime import datetime
 import asyncio
 from measurements.MeasurementModel import MeasurementModel
+from events import EventService
 
 import typedefs
 
@@ -14,10 +15,9 @@ import typedefs
 class StateService:
     def __init__(self):
         pass
-        # self.state: typedefs.State = {
-        #     "lamp": False,
-        #     "dimmer": 0,
-        # }
+        self.state: typedefs.State = {
+        }
+        self.flag = False
 
     async def broadcast(self, state):
         # map state -> client
@@ -31,21 +31,32 @@ class StateService:
         time = datetime.now()
 
         def map_from_device(device_state: typedefs.DeviceState):
-            map = {
-                "led": "lamp",
-                "pot": "dimmer",
-                "test": "test",
-            }
+            # map = {
+            #     "led": "lamp",
+            #     "pot": "dimmer",
+            #     "test": "test",
+            # }
+            # TODO: use map again
+            # return reduce(lambda acc, item: acc | [{'sensor': item[0], 'time': time.timestamp(), 'value': item[1]}], device_state.items(), dict())
+            return device_state
 
-            return reduce(lambda acc, item: acc + [{'sensor': map[item[0]], 'time': time.timestamp(), 'value': item[1]}], device_state.items(), list())
 
-        state = map_from_device(device_state)
+        new_state = map_from_device(device_state)
+        self.state |= new_state
+        await self.check_for_events()
+        for key, value in new_state.items():
+            asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
 
-        for item in state:
-            asyncio.ensure_future(MeasurementModel.create(time=item['time'], sensor=item['sensor'], value=item['value']))
+        await self.broadcast(new_state)
 
-        await self.broadcast(state)
 
+    async def check_for_events(self):
+        if not self.flag and self.state['weight'] > 900:
+            await instance(EventService).register_event('weight', f"Patient is to fat: weight = {self.state['weight']}")
+
+            self.flag = True
+        if self.state['weight'] <= 900 and self.flag:
+            self.flag = False
 
 
 

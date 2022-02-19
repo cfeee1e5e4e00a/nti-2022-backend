@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import aiohttp_cors
+from events import EventService
 
 
 os.chdir(Path(__file__).parent.parent)
@@ -19,7 +20,9 @@ import device
 import api.ws
 import state
 
+
 def DI_config(binder: Binder):
+    binder.bind(EventService, EventService())
     binder.bind(api.ws.WebsocketsService, api.ws.WebsocketsService())
     binder.bind(device.DeviceService, device.DeviceService(os.environ['DEVICE_HOST'], int(os.environ['DEVICE_PORT'])))
     binder.bind(state.StateService, state.StateService())
