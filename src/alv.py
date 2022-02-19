@@ -1,16 +1,20 @@
 import asyncio
+# import state
 import time
 
 class ALVService:
-    def __init__(self, host: str = '192.168.1.46', port: int = 2323):
+    def __init__(self, loop, host: str = '192.168.1.46', port: int = 2323):
         self._host = host
         self._port = port
 
         self._running = True
 
+        self._loop = loop
+
         self._connection_opened = False
 
-        asyncio.ensure_future(self._run())
+        # asyncio.ensure_future(self.run())
+        
 
     async def stop(self):
         self._running = False
@@ -20,43 +24,46 @@ class ALVService:
             await self._writer.wait_closed()
         else:
             print(f'Connection not opened')
+        
+    # async def set_state(self, device_state: typedefs.DeviceState):
+    #     state_service = instance(state.StateService)
+    #     await state_service.on_device_receive(device_state)
 
-    async def _run(self):
+    async def run(self):
+        self._reader, self._writer = await asyncio.open_connection(self._host, self._port)
+        self._connection_opened = True
+        
+        self._writer.write('bondage'.encode('utf-8'))
+        await self._writer.drain()
+
+        data = await self._reader.readexactly(27)
+            
+        #print(f'recieved: {data.decode()!r}')
+        
         while self._running:
             try:
-                self._reader, self._writer = await asyncio.open_connection(self._host, self._port)
-                self._connection_opened = True
-
                 self._writer.write('bondage'.encode('utf-8'))
                 await self._writer.drain()
 
-                data = await self._reader.read()
+                data = await self._reader.readexactly(8)
+                    
+                #print(f'recieved: {data.decode()!r}')
 
-                print(f'recieved: {data.decode()!r}')
+                alv_data = float(data)
 
-                self._connection_opened = False
+                print(f'{alv_data=}')
+
+                # self.set_state({'alv': alv_data})
 
             except Exception as e:
-                print(f'exception: {str(e)}')
+                print(f'exception: {e!s}')
                 await self.stop()
-
-
-async def main():
-    alv = ALVService()
-
-    loop = asyncio.get_event_loop()
-
-    end_time = loop.time() + 5
-
-    while True:
-        if end_time < loop.time():
-            break
-        await asyncio.sleep(0.1)
-
-    await alv.stop()
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+
+    alv = ALVService(loop)
+
+    loop.run_until_complete(alv.run())
 
