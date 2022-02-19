@@ -51,12 +51,13 @@ class StateService:
 
 
     async def check_for_events(self):
-        if not self.flag and self.state['weight'] > 900:
-            await instance(EventService).register_event('weight', f"Patient is to fat: weight = {self.state['weight']}")
-
-            self.flag = True
-        if self.state['weight'] <= 900 and self.flag:
-            self.flag = False
+        pass
+        # if not self.flag and self.state['weight'] > 900:
+        #     await instance(EventService).register_event('weight', f"Patient is to fat: weight = {self.state['weight']}")
+        #
+        #     self.flag = True
+        # if self.state['weight'] <= 900 and self.flag:
+        #     self.flag = False
 
 
 
