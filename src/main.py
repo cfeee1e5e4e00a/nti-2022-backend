@@ -19,6 +19,7 @@ os.chdir(Path(__file__).parent.parent)
 import device
 import api.ws
 import state
+import alv
 
 
 def DI_config(binder: Binder):
@@ -26,14 +27,17 @@ def DI_config(binder: Binder):
     binder.bind(api.ws.WebsocketsService, api.ws.WebsocketsService())
     binder.bind(device.DeviceService, device.DeviceService(os.environ['DEVICE_HOST'], int(os.environ['DEVICE_PORT'])))
     binder.bind(state.StateService, state.StateService())
+    binder.bind(alv.ALVService, alv.ALVService())
 
 
 async def shutdown(_):
     websocket_service = instance(api.ws.WebsocketsService)
     device_service = instance(device.DeviceService)
+    alv_service = instance(alv.ALVService)
 
     await device_service.stop()
     await websocket_service.stop()
+    await alv_service.stop()
 
 
 def start():
@@ -49,6 +53,7 @@ def start():
     websocket_service = instance(api.ws.WebsocketsService)
     device_service = instance(device.DeviceService)
     state_service = instance(state.StateService)
+    alv_service = instance(alv.ALVService)
 
     app = web.Application()
 
