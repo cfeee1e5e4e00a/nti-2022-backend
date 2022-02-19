@@ -11,6 +11,8 @@ class ALVService:
         self._running = True
 
         self._connection_opened = False
+        asyncio.ensure_future(self.run())
+        # print('!!!init')
 
     async def stop(self):
         self._running = False
@@ -49,7 +51,9 @@ class ALVService:
 
                 # print(f'{alv_data=}')
 
-                self.set_state({'alv': alv_data})
+                await self.set_state({'alv': alv_data})
+
+                await asyncio.sleep(1)
 
             except Exception as e:
                 print(f'exception: {e!s}')

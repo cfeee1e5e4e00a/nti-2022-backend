@@ -9,8 +9,9 @@ from db import setup_db
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import aiohttp_cors
+# import aiohttp_cors
 from events import EventService
+from face.wrapper import FaceService
 
 
 os.chdir(Path(__file__).parent.parent)
@@ -28,6 +29,7 @@ def DI_config(binder: Binder):
     binder.bind(device.DeviceService, device.DeviceService(os.environ['DEVICE_HOST'], int(os.environ['DEVICE_PORT'])))
     binder.bind(state.StateService, state.StateService())
     binder.bind(alv.ALVService, alv.ALVService())
+    binder.bind(FaceService, FaceService())
 
 
 async def shutdown(_):
@@ -38,6 +40,7 @@ async def shutdown(_):
     await device_service.stop()
     await websocket_service.stop()
     await alv_service.stop()
+    instance(FaceService).stop()
 
 
 def start():
@@ -60,6 +63,17 @@ def start():
     app.middlewares.append(session_middleware(RedisStorage(Redis(host=os.environ['REDIS_HOST']))))
 
     security.setup_security(app)
+
+    # @web.middleware
+    # async def cors_middleware(request, handler):
+    #     print('tedfgtrew')
+    #     response = await handler(request)
+    #     print('resp')
+    #     response.headers['Access-Control-Allow-Origin'] = '*'
+    #     return response
+    #
+    # app.middlewares.append(cors_middleware)
+
 
     app.add_routes([websocket_service.get_route('/ws')] + routes.get_all_routes('/api'))
 

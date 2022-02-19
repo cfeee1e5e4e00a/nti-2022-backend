@@ -51,8 +51,8 @@ class StateService:
         self.state |= new_state
 
         await self.check_for_events(old_state)
-        for key, value in new_state.items():
-            asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
+        # for key, value in new_state.items():
+        #     asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
 
         await self.broadcast(new_state)
 

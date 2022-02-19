@@ -3,77 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="uPlot.min.css">
 </head>
 <body>
-<script src="uPlot.iife.js"></script>
-<div id="data"></div>
+<img id="stream" src="/api/video">
+<div id="name"></div>
+<input type="text" id="recname">
+<button id="recognize">Train</button>
+
 <script>
-    const opts = {
-					title: "Fixed length / sliding data slices",
-					width: 1600,
-					height: 600,
-					cursor: {
-						drag: {
-							setScale: false,
-						}
-					},
-					select: {
-						show: false,
-					},
-					series: [
-						{},
-						{
-							label: "dimmer",
-							// scale: "%",
-							value: (u, v) => v == null ? "-" : v,
-							stroke: "red",
-						},
-					],
-					axes: [
-						{},
-						{
-							// scale: '%',
-							values: (u, vals, space) => vals.map(v => +v),
-						},
-						{
-							side: 1,
-							// scale: 'mb',
-							// values: (u, vals, space) => vals.map(v => +v.toFixed(2) + " MB"),
-							grid: {show: false},
-						},
-					]
-				};
-    function convert(d){
-        d.sort((a, b)=> {
-            return a.time - b.time;
-        })
-        let maxTime = d[d.length - 1].time;
-
-        d = d.filter(i => maxTime - i.time < 50)
-
-        let xs = [];
-        let ys = [];
-        for(let i of d){
-            xs.push(i.time);
-            ys.push(i.value);
-        }
-        return [xs, ys]
+    let ws = new WebSocket('ws://127.0.0.1:8080/ws')
+    ws.onmessage = (msg) => {
+        document.getElementById('name').innerText = JSON.parse(msg.data).face;
     }
-    (async ()=>{
-        let resp = await fetch('http://127.0.0.1:8080/api/history')
-        let data = await resp.json();
-        // console.log(data)
 
-        let uplot = new uPlot(opts, convert(data), document.body)
+    document.getElementById('recognize').onclick = async () => {
+        let resp = await fetch('http://127.0.0.1:8080/api/train', {method:'POST', body:JSON.stringify({login:document.getElementById('recname').value})})
+        await resp.body
+        console.log('recognized')
+    }
 
-        let ws = new WebSocket('ws://127.0.0.1:8080/ws')
-        ws.onmessage = (e) => {
-            data = data.concat(JSON.parse(e.data))
-            console.log(data)
-            uplot.setData(convert(data))
-        }
-    })()
 </script>
 </body>
 </html>
