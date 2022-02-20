@@ -8,7 +8,8 @@ def get_routes(base: str):
     return [
         web.get(base + '/card/{user}', get_card),
         web.post(base + '/card/{user}', post_card),
-        web.get(base + '/patients', all_patients)
+        web.get(base + '/patients', all_patients),
+        web.get(base + '/profile/{login}', patient)
     ]
 
 
@@ -18,6 +19,15 @@ async def get_user_by_login(login: str) -> UserModel | None:
         return users[0]
     else:
         return None
+
+
+async def patient(request: web.Request):
+    await aiohttp_security.check_authorized(request)
+    user = await aiohttp_security.authorized_userid(request)  # type: UserModel
+    if user.role != 'doctor' and user.login != request.match_info['login']:
+        return web.HTTPUnauthorized(text='You are not doctor')
+    patient = await get_user_by_login(request.match_info['login'])
+    return web.json_response(patient.profile.toJson())
 
 
 async def all_patients(request: web.Request):

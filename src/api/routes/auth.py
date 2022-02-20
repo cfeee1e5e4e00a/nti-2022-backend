@@ -43,7 +43,7 @@ async def sign_up(request: web.Request):
     profile = await ProfileModel.create(name=profile['name'], surname=profile['surname'], age=int(profile['age']), sex=profile['sex'])
     medcard_id = None
     if role == 'patient':
-        medcard_id = (await MedCardModel().create()).id
+        medcard_id = (await MedCardModel.create(weight=0, assignments="")).id
     user = await UserModel.create(login=login, password=password, role=role, profile_id=profile.id, rfid=int(data['rfid']), card_id=medcard_id)
 
     return web.HTTPOk()
