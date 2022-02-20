@@ -304,4 +304,6 @@ cython_debug/
 
 __pycache__/
 
-./docker_data
+docker_data
+
+face_data

@@ -103,7 +103,7 @@ class DeviceService:
             except ValueError:
                 pass
             except SerialException as e:
-                print(e)
+                # print(e)
                 timeout = 0.1
 
     async def connect(self, timeout:float = 0):

@@ -17,9 +17,10 @@ class EventModel(db.Model):
 
 
 class EventService:
-    async def register_event(self, tag: str, data: str):
+    async def register_event(self, tag: str, data: str, mail=False):
         time = datetime.now().timestamp()
-        await self.send_mail(f"{tag}: {data}", f"NTI: {tag}")
+        if mail:
+            await self.send_mail(f"{tag}: {data}", f"NTI: {tag}")
         asyncio.ensure_future(EventModel.create(time=time, tag=tag, data=data))
         print(f'EVENT:{tag}: {data}')
 

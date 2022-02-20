@@ -16,6 +16,8 @@ class ALVService:
         self._running = True
 
         self._connection_opened = False
+        asyncio.ensure_future(self.run())
+        # print('!!!init')
 
     async def stop(self):
         self._running = False
