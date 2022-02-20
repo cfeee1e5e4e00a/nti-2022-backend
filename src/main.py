@@ -9,7 +9,7 @@ from db import setup_db
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-# import aiohttp_cors
+import aiohttp_cors
 from events import EventService
 from face.wrapper import FaceService
 
@@ -75,14 +75,24 @@ def start():
     # app.middlewares.append(cors_middleware)
 
 
-    app.add_routes([websocket_service.get_route('/ws')] + routes.get_all_routes('/api'))
+    app.add_routes([websocket_service.get_route('/api/ws')] + routes.get_all_routes('/api'))
 
     app.on_shutdown.append(shutdown)
 
 
     asyncio.ensure_future(device_service.get_all())
 
+
+    # cors = aiohttp_cors.setup(app, defaults={
+    # "http://10.0.228.4:3000": aiohttp_cors.ResourceOptions(
+    #         allow_credentials=True,
+    #         expose_headers="*",
+    #         allow_headers="*",
+    #
+    #     )})
+
     for route in app.router.routes():
+        # cors.add(route)
         if route.method != 'HEAD':
             print(f'{route.method}\t{route.resource.canonical}')
 

@@ -1,7 +1,7 @@
 from aiohttp import web
 import aiohttp_security
 
-from user.model import UserModel
+from user.model import UserModel, ProfileModel, MedCardModel
 
 
 class AuthorizationPolicy(aiohttp_security.AbstractAuthorizationPolicy):
@@ -9,7 +9,12 @@ class AuthorizationPolicy(aiohttp_security.AbstractAuthorizationPolicy):
         return False
 
     async def authorized_userid(self, identity):
-        return await UserModel.get(int(identity))
+        users = await UserModel.load(profile=ProfileModel, card=MedCardModel).query.where(UserModel.id==int(identity)).gino.all()
+        if len(users) > 0:
+            return users[0]
+        else:
+            return None
+
 
 
 def setup_security(app: web.Application):

@@ -12,7 +12,7 @@ class ALVService:
 
         self._connection_opened = False
         asyncio.ensure_future(self.run())
-        # print('!!!init')
+        print('!!!init')
 
     async def stop(self):
         self._running = False
@@ -25,11 +25,13 @@ class ALVService:
         
     async def set_state(self, device_state: typedefs.DeviceState):
         state_service = instance(state.StateService)
+        print('!!!! alv set state')
         await state_service.on_device_receive(device_state)
 
     async def run(self):
         self._reader, self._writer = await asyncio.open_connection(self._host, self._port)
         self._connection_opened = True
+        print('!!! ALV CONNECTED')
         
         self._writer.write('bondage'.encode('utf-8'))
         await self._writer.drain()

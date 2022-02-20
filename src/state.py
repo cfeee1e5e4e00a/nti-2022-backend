@@ -22,6 +22,7 @@ class StateService:
         self.state: typedefs.State = {
             "rfid": 0,
             "door_opened": False,
+            "face": None
         }
         self.waiting_for_rfid = False
         self.flag = False
@@ -50,7 +51,7 @@ class StateService:
         old_state = self.state.copy()
         self.state |= new_state
 
-        await self.check_for_events(old_state)
+        await self.check_for_events(old_state, new_state)
         # for key, value in new_state.items():
         #     asyncio.ensure_future(MeasurementModel.create(time=time.timestamp(), sensor=key, value=value))
 
@@ -69,7 +70,7 @@ class StateService:
 
 
 
-    async def check_for_events(self, old_state):
+    async def check_for_events(self, old_state, diff):
         try:
             if not self.state['door_opened'] and not self.waiting_for_rfid:
                 if self.state['rfid'] != 0 and old_state['rfid'] == 0:
@@ -81,21 +82,30 @@ class StateService:
                         user = user[0] # type: UserModel
                         print(user.profile.name)
                         await instance(EventService).register_event('RFID', f'Door was opened by {user.profile.name} {user.profile.surname}')
-                        asyncio.ensure_future(instance(device.DeviceService).send({'door_opened': True, 'message': f'Welcome, {user.profile.name}'}))
+                        await self.open_door(user)
 
                     else:
                         await instance(EventService).register_event('RFID', f'Unknown card detected, id = {rfid}', True)
-                        asyncio.ensure_future(instance(device.DeviceService).send(
-                            {'message': f'Access DENIED'}))
-                        playsound.playsound('a.wav', block=False)
+                        await self.fail_door()
+
+            # TODO: only open when button pressed
+            if not self.state['door_opened'] and 'face' in diff.keys():
+                if (face := diff['face']) is not None:
+                    users = await UserModel.load(profile=ProfileModel).query.where(
+                        UserModel.login == str(face)).gino.all()
+                    if len(users) > 0:
+                        user = users[0]
+                        await instance(EventService).register_event('FACE', f'Door opened by {user.profile.name} {user.profile.surname}')
+                        await self.open_door(user)
         except Exception as e:
             print(e)
-        # if not self.flag and self.state['weight'] > 900:
-        #     await instance(EventService).register_event('weight', f"Patient is to fat: weight = {self.state['weight']}")
-        #
-        #     self.flag = True
-        # if self.state['weight'] <= 900 and self.flag:
-        #     self.flag = False
+
+    async def open_door(self, user: UserModel):
+        asyncio.ensure_future(instance(device.DeviceService).send({'door_opened': True, 'message': f'Welcome, {user.profile.name}'}))
+
+    async def fail_door(self):
+        asyncio.ensure_future(instance(device.DeviceService).send({'message': f'Access DENIED'}))
+        playsound.playsound('a.wav', block=False)
 
 
 

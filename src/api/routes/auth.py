@@ -1,6 +1,6 @@
 from aiohttp import web
 import aiohttp_security
-from user.model import UserModel, ProfileModel
+from user.model import UserModel, ProfileModel, MedCardModel
 from sqlalchemy import and_
 
 
@@ -16,7 +16,7 @@ def get_routes(base: str):
 async def info(request: web.Request):
     await aiohttp_security.check_authorized(request)
     user = await aiohttp_security.authorized_userid(request)  # type: UserModel
-    return web.json_response({"login": user.login, "id": user.id, "role": user.role})
+    return web.json_response({"login": user.login,  "role": user.role, "profile": user.profile.toJson()})
 
 
 async def sign_in(request: web.Request):
@@ -38,10 +38,12 @@ async def sign_up(request: web.Request):
     role = data['role']
     profile = data['profile']
 
-
-    profile = await ProfileModel.create(name=profile['name'], surname=profile['surname'], age=profile['age'], sex=profile['sex'])
-
-    user = await UserModel.create(login=login, password=password, role=role, profile_id=profile.id, rfid=data['rfid'], face=data['face'])
+    # TODO: transaction
+    profile = await ProfileModel.create(name=profile['name'], surname=profile['surname'], age=int(profile['age']), sex=profile['sex'])
+    medcard_id = None
+    if role == 'patient':
+        medcard_id = (await MedCardModel().create()).id
+    user = await UserModel.create(login=login, password=password, role=role, profile_id=profile.id, rfid=int(data['rfid']), card_id=medcard_id)
 
     return web.HTTPOk()
 

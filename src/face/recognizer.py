@@ -245,7 +245,7 @@ def end():
 def create_vt():
     global cap, config, recognizer
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
     config = Configure(preprocessing())
     config.update_user_dict()
     recognizer = Recogniser()

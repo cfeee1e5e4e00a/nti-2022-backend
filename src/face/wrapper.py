@@ -121,6 +121,8 @@ class FaceService:
                 prev_face = get_current_face()
                 self.face_q.put(prev_face)
             time.sleep(0.005)
+            # TODO: fix exceptions in cv2
+
         print('Face process stopped')
 
 

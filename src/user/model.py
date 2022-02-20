@@ -16,6 +16,9 @@ class ProfileModel(db.Model):
     age = Column(Integer())
     sex = Column(String())
 
+    def toJson(self):
+        return {'name': self.name, 'surname': self.surname, 'age':self.age, 'sex':self.sex}
+
 
 class MedCardModel(db.Model):
     __tablename__ = 'cards'
