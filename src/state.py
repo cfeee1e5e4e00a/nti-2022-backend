@@ -11,6 +11,7 @@ from user.model import UserModel, ProfileModel
 import device
 from threading import Thread
 import playsound
+import transliterate
 
 import typedefs
 
@@ -59,8 +60,8 @@ class StateService:
 
 
     async def get_rfid(self):
-        if self.waiting_for_rfid:
-            raise Exception('Already waiting')
+        # if self.waiting_for_rfid:
+        #     raise Exception('Already waiting')
         self.waiting_for_rfid = True
         while (rfid := self.state['rfid']) == 0:
             await asyncio.sleep(0.1)
@@ -72,6 +73,12 @@ class StateService:
 
     async def check_for_events(self, old_state, diff):
         try:
+            if 'alarm' in diff.keys():
+                if diff['alarm']:
+                    await instance(EventService).register_event('ALARM',f'Alarm was triggered', False)
+            if 'alv_failed' in old_state.keys() and 'alv_failed' in diff.keys():
+                if diff['alv_failed'] and not old_state['alv_failed']:
+                    await instance(EventService).register_event('ALV', f'ALV failed', False)
             if not self.state['door_opened'] and not self.waiting_for_rfid:
                 if self.state['rfid'] != 0 and old_state['rfid'] == 0:
                     print('rfid here')
@@ -99,9 +106,10 @@ class StateService:
                         await self.open_door(user)
         except Exception as e:
             print(e)
+            # raise e
 
     async def open_door(self, user: UserModel):
-        asyncio.ensure_future(instance(device.DeviceService).send({'door_opened': True, 'message': f'Welcome, {user.profile.name}'}))
+        asyncio.ensure_future(instance(device.DeviceService).send({'door_opened': True, 'message': f'Welcome, {transliterate.translit(user.profile.name, "ru", reversed=True)}'}))
 
     async def fail_door(self):
         asyncio.ensure_future(instance(device.DeviceService).send({'message': f'Access DENIED'}))

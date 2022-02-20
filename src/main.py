@@ -60,7 +60,7 @@ def start():
 
     app = web.Application()
 
-    app.middlewares.append(session_middleware(RedisStorage(Redis(host=os.environ['REDIS_HOST']))))
+    app.middlewares.append(session_middleware(RedisStorage(Redis(host=os.environ['REDIS_HOST']), max_age=60*24*365)))
 
     security.setup_security(app)
 

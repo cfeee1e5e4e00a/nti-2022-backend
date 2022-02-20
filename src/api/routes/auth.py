@@ -9,7 +9,8 @@ def get_routes(base: str):
         web.post(base + '/signin', sign_in),
         web.post(base + '/signup', sign_up),
         web.get(base + '/logout', logout),
-        web.get(base + '/me', info)
+        web.get(base + '/me', info),
+        # web.get(base + '/refid')
     ]
 
 

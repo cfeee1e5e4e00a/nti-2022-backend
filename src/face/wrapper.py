@@ -113,10 +113,16 @@ class FaceService:
                     self.face_q.put(None)
                     vt.start_sampling(cmd)
                     while vt.sampling:
-                        self.image_q.put(vt.show_pic())
+                        try:
+                            self.image_q.put(vt.show_pic())
+                        except cv2.error:
+                            pass
                         time.sleep(0.005)
                     self.done_q.put('')
-            self.image_q.put(vt.show_pic())
+            try:
+                self.image_q.put(vt.show_pic())
+            except cv2.error:
+                pass
             if prev_face != get_current_face():
                 prev_face = get_current_face()
                 self.face_q.put(prev_face)
