@@ -1,4 +1,5 @@
 import asyncio
+# from datetime import datetime
 import state
 import typedefs
 from inject import instance
@@ -7,6 +8,10 @@ class ALVService:
     def __init__(self, host: str = '192.168.1.46', port: int = 2323):
         self._host = host
         self._port = port
+
+        # self._file_name = file_name
+
+        # open(file_name, 'w').close();
 
         self._running = True
 
@@ -23,6 +28,11 @@ class ALVService:
         else:
             print(f'Connection not opened')
         
+    # async def _write2file(self, time, data: float):
+    #     with open('../../' + self._file_name, 'a') as outf:
+    #         outf.write(f'{time} {data}\n')
+    #     await asyncio.sleep(0.1)
+
     async def set_state(self, device_state: typedefs.DeviceState):
         state_service = instance(state.StateService)
         print('!!!! alv set state')
@@ -36,26 +46,33 @@ class ALVService:
         self._writer.write('bondage'.encode('utf-8'))
         await self._writer.drain()
 
-        data = await self._reader.readexactly(27)
+        data = await self._reader.readexactly(29)
             
         # print(f'recieved: {data.decode()!r}')
         
+        buf = f'{data[-2:].decode()}'
+
         while self._running:
             try:
                 self._writer.write('bondage'.encode('utf-8'))
                 await self._writer.drain()
 
-                data = await self._reader.readexactly(8)
-                    
-                # print(f'recieved: {data.decode()!r}')
+                # data = await self._reader.readexactly(8)
+                data = await self._reader.readuntil(separator=b'.')
+                # data = await self._reader.readline()
 
-                alv_data = float(data)
+
+                # print(f'recieved: {buf+data[:-2].decode()!r}')
+
+                alv_data = float(buf + f'{data[:-2].decode()}')
+                buf = f'{data[-2:].decode()}'
 
                 # print(f'{alv_data=}')
 
-                await self.set_state({'alv': alv_data})
+                # now = datetime.now()
+                # await self._write2file(now.strftime("%H:%M:%S"), alv_data)
 
-                await asyncio.sleep(1)
+                self.set_state({'alv': alv_data})
 
             except Exception as e:
                 print(f'exception: {e!s}')
